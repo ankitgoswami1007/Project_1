@@ -9,24 +9,6 @@ const check = function(x) {
     return x.every(i => (typeof i === "string"));
 }
 
-const validData = ( obj,arr,arr2) => {
-    
-    for ( let i=0;i<arr.length;i++)
-    {
-       
-        if (typeof obj[arr[i]]!= "string" || typeof obj[arr[i]]!= 'undefined')
-        return [false, arr[i]]
-    }
-    for ( let i=0;i<arr2.length;i++)
-    {
-        if (Array.isArray(obj[arr2[i]]) || typeof obj[arr2[i]] != 'undefined')
-        return [false, arr2[i]]
-    }
-    return [true]
-}
-
-
-
 
 //------------ API for create blog for Author
 const createBlog = async function (req , res) {
@@ -142,10 +124,7 @@ const getBlogs = async function (req , res) {
             return res.status(400).send( {status: false , msg: "Invalid Filters"})
         }
 
-        let valid = validData( queryData , ['category'],[ 'tags', 'subcategory'])
-        if(valid[0] == false){
-            return res.status(400).send({status:false , msg: valid[1] + " is not a valid value"  })
-        }
+      
 
         // perform  Authorization
         let decodedToken =  req.decodedToken
