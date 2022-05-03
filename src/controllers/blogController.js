@@ -36,7 +36,7 @@ const createBlog = async function (req , res) {
          // authorization
          let decodedToken =  req.decodedToken
         if( data.authorId != decodedToken.authorId ){
-            return res.status(400).send({status: false , msg: "Author is Different"})
+            return res.status(401).send({status: false , msg: "Author is Different, unauthorized"})
         }
        
           const dv = /[a-zA-Z]/;
@@ -107,19 +107,26 @@ const getBlogs = async function (req , res) {
         
         let queryData = req.query
 
-        // Validate that filter is present in request query  or not
+        
         if (Object.keys(queryData).length == 0) { 
-            return res.status(400).send({ status: false, msg: "Invalid request !! Please Provide Blog Details"})
+        
+            let blogInfo = await blogModel.find({isPublished: true , isDeleted: false})
+            if(!blogInfo){
+                return res.status(404).send({status: false , msg:"Document not found"})
+            }
+            return res.status(200).send({status: true , data:blogInfo})
           }
+
           //   check if filters have these attributes 
           // checking that any of these filter is not present then user is not allowed to get the data
         if(!(queryData.authorId || queryData.category || queryData.tags || queryData.subcategory ) ){
             return res.status(400).send( {status: false , msg: "Invalid Filters"})
         }
+
         // perform  Authorization
         let decodedToken =  req.decodedToken
         if(queryData.authorId != undefined && queryData.authorId != decodedToken.authorId ){
-            return res.status(400).send({status: false , msg: "Author is Different"})
+            return res.status(401).send({status: false , msg: "Author is Different, unauthorized"})
         }
         if(queryData.authorId == undefined) queryData.authorId =  decodedToken.authorId
         
@@ -152,9 +159,9 @@ const getBlogs = async function (req , res) {
             }
 
             // remove the space in tags and save in lowercase
-            if(queryData.tags) queryData.tags = queryData.tags.toLowerCase().trim()
+            if(typeof queryData.tags == 'string') queryData.tags = queryData.tags.toLowerCase().trim()
               // remove the space in subcategory and save in lowercase
-            if(queryData.subcategory) queryData.subcategory = queryData.subcategory.toLowerCase().trim()
+            if(typeof queryData.subcategory == 'string') queryData.subcategory = queryData.subcategory.toLowerCase().trim()
 
             for (let key in queryData) {
                 if (Array.isArray(queryData[key])) {
@@ -164,6 +171,7 @@ const getBlogs = async function (req , res) {
                         arr.push(queryData[key][i].toLowerCase().trim())
                     }
                     queryData[key] = [...arr];
+                    queryData[key] = {'$all': queryData[key]}
                 }
             }
 
@@ -206,15 +214,11 @@ const updateBlogs = async function ( req , res) {
         // taking blog id from path param
         let blogId = req.params.blogId
 
-        // if(!ObjectId.isValid(blogId)){
-        //     return res.status(400).send({status: false , msg:"Invalid Blog-Id"})
-        // }
+       
         
         // checking that blog data is present or not in database called blogs
         let blogData = await blogModel.findById(blogId)
-        if(!blogData || blogData.isDeleted == true){
-            return res.status(404).send({status: false , msg: "Document Not Found"})
-        }
+        
          // converting given tags Array and subcategory array elements into proper format
         for (let key in blog) {
             if (Array.isArray(blog[key])) {
@@ -224,6 +228,7 @@ const updateBlogs = async function ( req , res) {
                     arr.push(blog[key][i].toLowerCase().trim())
                 }
                 blog[key] = [...arr];
+
             }
         }
         //  checking if blog is published or not
@@ -239,7 +244,7 @@ const updateBlogs = async function ( req , res) {
                 {new : true}
             )
         // sending the data as a response to the user
-            res.status(200).send({status: true , updatedData: updatedBlog})
+            return res.status(200).send({status: true , updatedData: updatedBlog})
             
             
     } catch (err) {
@@ -250,23 +255,22 @@ const updateBlogs = async function ( req , res) {
 const deleteByBlogId = async function ( req , res){
     try {
         let blogId = req.params.blogId
-        // if(!ObjectId.isValid(blogId)){
-        //     return res.status(400).send({status: false , msg:"Invalid Blog-Id"})
-        // }
+       
 
         //checking that given blog id is exist or not in blog's database
         let blogData =  await blogModel.findById(blogId)
-        if(!blogData || blogData.isDeleted == true){
-            res.status(404).send({status: false , msg: "Data Not Found"})
-        }
+        // if(!blogData || blogData.isDeleted == true){
+        //     res.status(404).send({status: false , msg: "Data Not Found"})
+        // }
+
+
       // set isDeleted to true and set the deleted at with current date
         blogData.isDeleted = true
         blogData.deletedAt = new Date().toISOString()
         await blogData.save()
-        res.status(200).send({msg:"Document is Successfully Deleted"})
+        res.status(200).send({ status: true , msg:"Document is Successfully Deleted"})
 
-        
-        
+           
     } catch (err) {
         res.status(500).send({status: false , error: err.message}) 
     }
@@ -283,14 +287,14 @@ const deleteByQuery = async function (req, res) {
         let queryData = req.query
         let decodedToken = req.decodedToken
         if(queryData.authorId && decodedToken.authorId != queryData.authorId ){
-            return res.status(403).send({status: false , msg: "Author is not allowed to perform this task"})
+            return res.status(401).send({status: false , msg: "Author is not allowed to perform this task"})
         } 
         
         queryData.authorId = decodedToken.authorId 
         
         //   check if filters have these attributes 
         if (!(queryData.category || queryData.authorId || queryData.tags || queryData.subcategory)) {
-            return res.status(404).send({ status: false, msg: "Invalid Request...." })
+            return res.status(400).send({ status: false, msg: "Invalid Request...." })
         }
 
          // Validate the authorId
@@ -310,9 +314,23 @@ const deleteByQuery = async function (req, res) {
             queryData.category = queryData.category.toLowerCase().trim()
         }
 
-        if(queryData.tags) queryData.tags = queryData.tags.toLowerCase().trim()
-        if(queryData.subcategory) queryData.subcategory = queryData.subcategory.toLowerCase().trim()
+        if(typeof queryData.tags == 'string') queryData.tags = queryData.tags.toLowerCase().trim()
+        if(typeof queryData.subcategory == 'string') queryData.subcategory = queryData.subcategory.toLowerCase().trim()
 
+
+        for (let key in queryData) {
+            if (Array.isArray(queryData[key])) {
+                let arr=[];
+                for (let i = 0; i < queryData[key].length; i++) {
+                        if(queryData[key][i].trim().length>0)
+                    arr.push(queryData[key][i].toLowerCase().trim())
+                }
+                queryData[key] = [...arr];
+                queryData[key] = {'$all': queryData[key]}
+            }
+        }
+
+    
         
         // set isDeleted to true and set the deleted at with current date
       let deletedDate = new Date().toISOString()
@@ -320,7 +338,7 @@ const deleteByQuery = async function (req, res) {
       let data1 = await blogModel.updateMany(queryData, { isDeleted: true, deletedAt: deletedDate }, { new: true })
     
       if(data1.matchedCount == 0){
-          return res.status().send( {status: false , msg: 'No match found'})
+          return res.status(404).send( {status: false , msg: 'No match found'})
       }
       return res.status(200).send({ status: true, msg: "Document is Successfully Deleted" })
     } catch (error) {

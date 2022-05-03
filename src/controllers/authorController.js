@@ -29,7 +29,6 @@ const createAuthor = async function (req , res) {
             return res.status(400).send( { status: false , msg: "Please Enter Author's Email "})
         }
 
-        //const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ;
         const re = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,20}$/; 
 
         // method for email validation using regular expression
@@ -53,12 +52,12 @@ const createAuthor = async function (req , res) {
         
         // creating author in database
         let author = await authorModel.create(data)
-        res.status(201).send({status: true , msg:"Author Created Successfully" , data: author})
+         return res.status(201).send({status: true , msg:"Author Created Successfully" , data: author})
         
     
     } catch (err) {
         
-        res.status(500).send({status: false , error: err.message})
+        return res.status(500).send({status: false , error: err.message})
     }
 }
 
@@ -75,7 +74,7 @@ const loginAuthor = async function ( req, res) {
         let password = data.password;
         if(userName !== '' && password !== ''){
 
-            //let re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
+            
             const re = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,20}$/; 
             // validating username with the help of regex
             if((re.test(userName)==true)){
@@ -83,7 +82,7 @@ const loginAuthor = async function ( req, res) {
                 // check that username and password already present in databse aur not
                 let user = await authorModel.findOne( {email: userName , password: password});
                 //console.log(user);
-                if(!user) res.status(400).send({  msg: "Invalid username or the password" })
+                if(!user) return res.status(400).send({  msg: "Invalid username or the password !!!!" })
                 // creating token for this author with these credentials
                 let token = jwt.sign(
                     {
@@ -97,14 +96,14 @@ const loginAuthor = async function ( req, res) {
                 res.status(201).send({ status: true, data: token });
         
             }
-            else res.status(401).send({msg:'Invalid Username'})
+            else return res.status(400).send({msg:'Invalid Username'})
 
         }
-        else res.status(400).send({msg:'UserName, Password are missing'})
+        else  return res.status(400).send({msg:'UserName, Password are missing'})
         
     } 
     catch (err) {
-        res.status(500).send({ msg: "Error", error: err.message })
+        return res.status(500).send({ msg: "Error", error: err.message })
     }
 
 }
