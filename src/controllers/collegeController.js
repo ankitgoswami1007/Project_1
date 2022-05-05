@@ -32,7 +32,7 @@ const isValid = function(value) {
      try {
          const requestBody = req.body
          if(!isValidRequestBody(requestBody)){
-             res.status(400).send({status: false, message: 'Invalid request parameters. Please provide college details'})
+             return res.status(400).send({status: false, message: 'Invalid request parameters. Please provide college details'})
          }
          const {name, fullName, logoLink, isDeleted } = requestBody // Object Destructing
 
@@ -124,9 +124,7 @@ const isValid = function(value) {
  const getCollegeDetails = async function (req, res) {
     try {
 
-
-   
-        let name1 = req.query.collegeName
+    let name1 = req.query.collegeName
 
     // if(isValidRequestBody(req.query)){
     //     return res.status(400).send({status: false , message:'Please provide valid filter'})
@@ -160,7 +158,7 @@ const isValid = function(value) {
 
    const interneeData = await internModel.find({collegeId: college._id})
 
-   const finalData = { name: name, fullName: fullName, logoLink: logoLink, interests: interneeData.length ? interneeData : {message: 'No one is applied for Internship in this college'}}
+   const finalData = { name: name, fullName: fullName, logoLink: logoLink, interns: interneeData.length  ? interneeData : {message: 'No one is applied for Internship in this college'}}
    return res.status(200).send({status: true , data: finalData })
    
         

@@ -48,7 +48,7 @@ const isValid = function(value) {
          return
      }
 
-     const {name, email, mobile, collegeId , isDeleted} = requestBody
+     const {name, email, mobile, collegeName , isDeleted} = requestBody
 
      if(!isValid(name)) {
         res.status(400).send({status: false, message: 'Student name is required'})
@@ -70,30 +70,43 @@ const isValid = function(value) {
         return
     }
 
-
     if(!isValidMobleNumber( mobile.trim() )) {
         res.status(400).send({status: false, message: `${mobile} is not a valid number`})
         return
     }
 
-    if(!isValid( collegeId.trim() )) {
-        res.status(400).send({status: false, message: `collegeId is required`})
+    //
+
+    if(!isValid(collegeName)) {
+        res.status(400).send({status: false, message: 'College Name is required'})
         return
     }
 
-    if(!isValidObjectId(collegeId)) {
-        res.status(400).send({status: false, message: `${collegeId} is not a valid college Id`})
-        return
-    }
+    if(!isValid2(collegeName)) {
+       res.status(400).send({status: false, message: 'College Name is not a valid name'})
+       return
+   }
 
-    const college = await collegeModel.findById(collegeId);
+   if(collegeName !== collegeName.toLowerCase()){
+       res.status(400).send({status: false, message: 'College Name should be in lowerCase only'})
+       return
+   }
+
+   if (collegeName.split(' ').length > 1) {
+       res.status(400).send({status: false, message: 'Please provide the valid Abbreviation'})
+       return
+   }
+
+
+    const college = await collegeModel.findOne({name: collegeName});
 
     if(!college) {
-        res.status(400).send( { status: false , message: 'college does not exist'})
+        res.status(404).send( { status: false , message: 'college does not exist'})
         return
     }
-
     
+    collegeId = college._id
+   
     // Checking Duplicate Entry of interns
     const duplicateEntries = await internModel.find();
    

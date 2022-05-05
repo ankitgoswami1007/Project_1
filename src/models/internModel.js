@@ -41,7 +41,6 @@ const internSchema = new mongoose.Schema ({
     collegeId: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref : 'College',
-        required: "Student's College Name is Required ",
         trim: true
     },
 
@@ -59,3 +58,5 @@ module.exports = mongoose.model("Intern", internSchema);
 //mobile: {mandatory, valid mobile number, unique}, 
 //collegeId: {ObjectId, ref to college model, 
 //isDeleted: {boolean, default: false}
+
+//required: "Student's College Name is Required ",
