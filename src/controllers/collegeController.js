@@ -160,10 +160,7 @@ const isValid = function(value) {
 
    const interneeData = await internModel.find({collegeId: college._id})
 
-   if(interneeData.length === 0){
-        return res.status(404).send({status: false , message: "Students are yet to enroll to this college"})
-   }
-   const finalData = { name : name, fullName:fullName,logoLink: logoLink,interests:interneeData}
+   const finalData = { name : name, fullName:fullName,logoLink: logoLink,interests:interneeData.length ? interneeData : {message: 'No one is applied for Internship in this college'}}
    return res.status(200).send({status: true , data: finalData })
    
         
