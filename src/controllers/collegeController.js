@@ -83,7 +83,7 @@ const isValid = function(value) {
 
          const duplicateLogo = await collegeModel.findOne({logoLink: logoLink})
          if(duplicateLogo){
-                 res.status(409).send( {status: false, message: 'The logo link which you have entered belongs to some other college'})
+                 res.status(400).send( {status: false, message: 'The logo link which you have entered belongs to some other college'})
                  return
          }
 
@@ -92,13 +92,13 @@ const isValid = function(value) {
 
             const duplicateAbbrev = await collegeModel.findOne({name: name})
             if(duplicateAbbrev){
-                res.status(409).send({status: false , message:'Name already Exist'})
+                res.status(400).send({status: false , message:'Name already Exist'})
                 return
             }
 
             const duplicateFullName = await collegeModel.findOne({fullName: fullName})
             if(duplicateFullName){
-                res.status(409).send({status: false , message:'College FullName is already Exist'})
+                res.status(400).send({status: false , message:'College FullName is already Exist'})
                 return
             }
          }
@@ -150,13 +150,13 @@ const isValid = function(value) {
        return
    }
 
-   const college = await collegeModel.findOne({name: name1})
+   const college = await collegeModel.findOne({name: name1 , isDeleted: false})
    if(!college){
        return res.status(404).send({status:false , message:"College not found!!!!"})
    }
    const { name, fullName, logoLink } = college
 
-   const interneeData = await internModel.find({collegeId: college._id})
+   const interneeData = await internModel.find({collegeId: college._id, isDeleted: false }).select({name:1 , email:1 ,mobile:1})
 
    const finalData = { name: name, fullName: fullName, logoLink: logoLink, interns: interneeData.length  ? interneeData : {message: 'No one is applied for Internship in this college'}}
    return res.status(200).send({status: true , data: finalData })

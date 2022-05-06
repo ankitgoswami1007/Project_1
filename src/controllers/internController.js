@@ -98,7 +98,7 @@ const isValid = function(value) {
    }
 
 
-    const college = await collegeModel.findOne({name: collegeName});
+    const college = await collegeModel.findOne({name: collegeName , isDeleted: false});
 
     if(!college) {
         res.status(404).send( { status: false , message: 'college does not exist'})
@@ -117,13 +117,13 @@ const isValid = function(value) {
         const isEmailUsed = await internModel.findOne({ email: email });
         if (isEmailUsed !== null) {
             console.log(isEmailUsed);
-            return res.status(409).send({ status: false, msg: "Email already exists" });
+            return res.status(400).send({ status: false, msg: "Email already exists" });
         }
         
         // Checking Duplicate Mobile    
         const duplicateMobile = await internModel.findOne({ mobile: mobile })
         if (duplicateMobile) {
-            return res.status(409).send({ status: false, msg: "Mobile Number already exists" });
+            return res.status(400).send({ status: false, msg: "Mobile Number already exists" });
         }
     }
 
@@ -136,7 +136,7 @@ const isValid = function(value) {
     const internData = {name, email, mobile, collegeId}
 
     const newIntern = await internModel.create(internData);
-     res.status(201).send({status: true, message: 'InternDetail is created Successfully', data: newIntern })
+     res.status(201).send({status: true, message: 'Intern Detail is created Successfully', data: newIntern })
 
         
     } catch (err) {
@@ -144,12 +144,6 @@ const isValid = function(value) {
     }
      
  }
-
-
-
-
-
-
 
 
 module.exports.registerIntern =  registerIntern 
