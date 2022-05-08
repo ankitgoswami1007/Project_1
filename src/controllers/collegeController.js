@@ -83,7 +83,7 @@ const isValid = function(value) {
 
          const duplicateLogo = await collegeModel.findOne({logoLink: logoLink})
          if(duplicateLogo){
-                 res.status(400).send( {status: false, message: 'The logo link which you have entered belongs to some other college'})
+                 res.status(409).send( {status: false, message: 'The logo link which you have entered belongs to some other college'})
                  return
          }
 
@@ -92,13 +92,13 @@ const isValid = function(value) {
 
             const duplicateAbbrev = await collegeModel.findOne({name: name})
             if(duplicateAbbrev){
-                res.status(400).send({status: false , message:'Name already Exist'})
+                res.status(409).send({status: false , message:'Name already Exist'})
                 return
             }
 
             const duplicateFullName = await collegeModel.findOne({fullName: fullName})
             if(duplicateFullName){
-                res.status(400).send({status: false , message:'College FullName is already Exist'})
+                res.status(409).send({status: false , message:'College FullName is already Exist'})
                 return
             }
          }

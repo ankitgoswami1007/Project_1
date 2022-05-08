@@ -31,7 +31,8 @@ const isValid = function(value) {
  }
 
  const isValidMobleNumber = function(mobileNumber) {
-    return /^([+]\d{2}[ ])?\d{10}$/.test(mobileNumber)
+    //return /^([+]\d{2}[ ])?\d{10}$/.test(mobileNumber)
+    return /^[6789]\d{9}$/.test(mobileNumber)
  }
 
  const isValidObjectId = function(objectId) {
@@ -116,14 +117,14 @@ const isValid = function(value) {
         // Checking Duplicate Email
         const isEmailUsed = await internModel.findOne({ email: email });
         if (isEmailUsed !== null) {
-            console.log(isEmailUsed);
-            return res.status(400).send({ status: false, msg: "Email already exists" });
+           // console.log(isEmailUsed);
+            return res.status(409).send({ status: false, msg: "Email already exists" });
         }
         
         // Checking Duplicate Mobile    
         const duplicateMobile = await internModel.findOne({ mobile: mobile })
         if (duplicateMobile) {
-            return res.status(400).send({ status: false, msg: "Mobile Number already exists" });
+            return res.status(409).send({ status: false, msg: "Mobile Number already exists" });
         }
     }
 
